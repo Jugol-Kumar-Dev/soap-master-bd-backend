@@ -2,7 +2,9 @@
     <label>{{ label }}: </label>
     <div class="mb-1">
         <div class="input-group input-group-merge form-password-toggle">
-            <input :type="passwordFieldType" :value="modelValue" @input="updateValue"
+            <input :type="passwordFieldType" :value="modelValue"
+                   autocomplete="current-password"
+                   placeholder="******" @input="updateValue"
                 class="form-control form-control-merge" />
             <span class="input-group-text">
                 <Icon class="cursor-pointer" :title="passwordToggleIcon" @click="togglePasswordVisibility" />

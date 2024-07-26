@@ -15,19 +15,19 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
+            $table->string('title')->nullable();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->longText('content')->nullable();
+            $table->text('achievement')->nullable();
+            $table->text('finishing_achievement')->nullable();
             $table->string('cover')->nullable();
             $table->text('video')->nullable();
+            $table->decimal('old_price', 8, 2)->nullable();
             $table->decimal('price', 8, 2)->nullable();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('category_id');
             $table->enum('status', ['pending', 'inactive', 'active', 'cancel'])->default('pending');
-            $table->integer('access_time')->nullable();
-            $table->enum('access_type', ['Year', 'Month', 'Days'])->nullable();
-            $table->date('active_on');
+            $table->string('time')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

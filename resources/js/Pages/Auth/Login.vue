@@ -11,13 +11,8 @@
                     <div class="auth-wrapper auth-basic px-2">
                         <div class="auth-inner my-2">
                             <!-- Login basic -->
-                            <div class="card mb-0 shadow-none bg-white card-top-design">
+                            <div class="card mb-0 bg-white shadow-bottom">
                                 <div class="card-body bg-transparent shadow-none ">
-<!--                                    <a href="/" class="brand-logo ">-->
-<!--                                        <img src="../../images/logo2.png" class="img-fluid avatar-sm"/>-->
-<!--                                    </a>-->
-
-                                    <!--                                    <h4 class="card-title text-center mb-1">Welcome to LMS Panel</h4>-->
                                     <h2 class="card-text mb-2 text-center">
                                         Login
                                     </h2>
@@ -26,7 +21,10 @@
                                         <p class="text-danger" v-html="$page.props.flash.message"></p>
                                     </div>
                                     <form class="auth-login-form mt-2" @submit.prevent="submit">
-                                        <Text v-model="form.email" type="email" label="Email" :error="form.errors.email" placeholder="mail@example.com" />
+                                        <Text v-model="form.email"
+                                              type="email" label="Email"
+                                              autocomplete="email"
+                                              :error="form.errors.email" placeholder="mail@example.com" />
                                         <Password v-model="form.password" label="Password" :error="form.errors.password" />
                                         <div class="d-flex align-items-center justify-content-between">
                                             <Checkbox v-model="form.remember" label="Remember Me" />
@@ -80,8 +78,8 @@ const submit = () => {
 <style lang="scss">
     @import '../../../sass/base/pages/authentication.scss';
 
-    .card-top-design{
-        border-top:8px solid var(--bs-primary);
-    }
+    //.card-top-design{
+    //    border-top:8px solid var(--bs-primary);
+    //}
 
 </style>

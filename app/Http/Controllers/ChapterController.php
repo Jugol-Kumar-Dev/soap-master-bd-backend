@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chapter;
 use App\Http\Requests\UpdateChapterRequest;
+use App\Models\ChapterItem;
 use Illuminate\Support\Facades\Request;
 
 class ChapterController extends Controller
@@ -32,21 +33,27 @@ class ChapterController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreChapterRequest  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store()
     {
-        Request::validate([
-            'course_id' => 'required',
-            'title' => 'required',
-        ]);
+        if(Request::input('type') == 'moduleItem'){
+            ChapterItem::create([
+                'course_id' => Request::input('course_id'),
+                'chapter_id' => Request::input('chapter_id'),
+                'item_name' => Request::input('name'),
+            ]);
+        }else{
+            Request::validate([
+                'course_id' => 'required',
+                'title' => 'required',
+            ]);
+            Chapter::create([
+                'course_id' => Request::input('course_id'),
+                'chapter_title' => Request::input('title'),
+            ]);
+        }
 
-        Chapter::create([
-            'course_id' => Request::input('course_id'),
-            'chapter_title' => Request::input('title'),
-            'chapter_details' => Request::input('desc'),
-            'status' => Request::input('status'),
-        ]);
 
         return back();
     }

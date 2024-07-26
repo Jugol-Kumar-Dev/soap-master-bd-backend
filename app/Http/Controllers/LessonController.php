@@ -38,24 +38,18 @@ class LessonController extends Controller
      */
     public function store()
     {
-        $lesson = Lesson::create(
-            Request::validate([
-                'name'        => 'required|max:150',
-                'chapter_id'  => 'nullable',
-                'description' => 'required',
-                'video'       => 'nullable',
-                'course_id'   => 'required',
-                'file'        => 'nullable',
-                'status'      => 'boolean',
-                'content'     => 'nullable',
-            ])
-        );
+        $data = Request::validate([
+            'name'        => 'required|max:150',
+            'chapter_id'  => 'nullable',
+            'video'       => 'nullable',
+            'course_id'   => 'required',
+            'file'        => 'nullable',
+            'status'      => 'boolean',
+            'description'     => 'nullable',
+        ]);
 
-//        if (Request::hasFile('file')) {
-//            $filePath = Request::file('file')->store('image', 'public');
-//            $lesson->file = $filePath;
-//            $lesson->save();
-//        }
+        $data['chapter_item_id'] = Request::input('chapter_id');
+        Lesson::create($data);
 
         return Redirect::back();
     }

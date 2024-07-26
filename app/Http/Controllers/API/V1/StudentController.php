@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\VerificationController;
 use App\Mail\ForgatePasswordMail;
+use App\Models\Lesson;
 use App\Models\User;
 use http\Env\Response;
 use Illuminate\Http\Request;
@@ -34,15 +35,15 @@ class StudentController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if(!$user || !Hash::check($request->password, $user->password)){
+        if(!$user || !Hash::check($request->password, $user->password) || $user->role == 'admin'){
             return response()->json([
                 'status' => 'failed',
                 'message' => 'Invalid Credentials'
             ], 401);
         }
 
+        $user->tokens()->delete();
         $user->token = $user->createToken($request->email)->plainTextToken;
-
 
         $response = [
             'status' => 'success',
@@ -56,25 +57,16 @@ class StudentController extends Controller
     public function saveStudent(Request $request): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
-            'name' => 'required',
+            'name' => 'nullable',
             'phone' => 'required|unique:users,phone',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'doctorId' => 'nullable',
-            'certificate' => 'required|file',
         ]);
-
 
         $url ="";
         if (\Illuminate\Support\Facades\Request::hasFile('certificate')) {
             $url = \Illuminate\Support\Facades\Request::file('certificate')->store('image', 'public');
         }
-
-
-
-//        $certificate = \Illuminate\Support\Facades\Request::file('certificate')->store('public/certificates/');
-//        $placementLatter = \Illuminate\Support\Facades\Request::file('placementLatter')->store('public/placementLatter/');
-//        $data['placement_latter'] = $placementLatter ?? null;
 
         $data['certificate'] = $url ?? null;
         $data['doctor_id'] = \Illuminate\Support\Facades\Request::input('doctorId');
@@ -82,20 +74,27 @@ class StudentController extends Controller
         $user = User::create($data);
 
 
-        $verification = new VerificationController();
-        $verification->refendEmail($user->email);
+        if(env('MAIL_VERIFICATION')){
+            $verification = new VerificationController();
+            $verification->refendEmail($user->email);
+        }
 
         return response()->json([
             "data" => $user,
         ]);
     }
 
-    public function logoutStudent(Request $request): \Illuminate\Http\Response
+    public function logoutStudent(Request $request): \Illuminate\Http\JsonResponse
     {
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return response()->noContent();
+
+        $request->user()->tokens()->delete();
+//        Auth::guard('web')->logout();
+//        $request->session()->invalidate();
+//        $request->session()->regenerateToken();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'logout successfully done.'
+        ], 200);
     }
 
     public function sendForgotPasswordReqs(Request $request): \Illuminate\Http\JsonResponse
@@ -119,4 +118,15 @@ class StudentController extends Controller
         }
 
     }
+
+
+
+    // student read this lesson if is login.
+    public function readLesson($id)
+    {
+        $lesson = Lesson::findOrFail($id);
+        return \response()->json($lesson);
+    }
+
+
 }

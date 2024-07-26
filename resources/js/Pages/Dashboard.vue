@@ -105,6 +105,6 @@ let props = defineProps({
     total_sale: Number,
     total_student: Number,
     total_course: Number,
-    total_sale_amount: Number,
+    total_sale_amount: Number|String|undefined,
 });
 </script>

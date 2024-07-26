@@ -25,16 +25,11 @@ class CourseController extends Controller
      */
     public function index()
     {
+        $courses = Course::query()->with(['chapters.chapterItems.lessons'])->get();
 
-        $courses = Course::query()
-            ->where('status' , '=', 'active')
-            ->select(['id', 'name', 'description', 'cover', 'price'])
-            ->latest()
-            ->get();
         return response()->json([
            "data" => $courses
         ]);
-
     }
 
     /**
@@ -57,18 +52,14 @@ class CourseController extends Controller
     public function show(Course $course)
     {
 
-//        $course = $course->load('chapters', 'chapters.videos', 'user')->loadCount(['chapters', 'chapterVideos']);
+        $course->load(['chapters.chapterItems.lessons']); //->get();
+
+//        $course = Course::with(['chapters:id,course_id,chapter_title,chapter_details', 'chapters.videos:chapter_id,id,name', 'user:id,name,email'])
+//            ->withCount(['mocktests', 'zoomes', 'chapters', 'lessons', 'orders'])
+//            ->findOrFail($course->id);
 //
+//        $course->courseVideos = $course->lessons()->orderBy('id', 'desc')->doesntHave('chapter')->get();
 //
-//
-
-
-        $course = Course::with(['chapters:id,course_id,chapter_title,chapter_details', 'chapters.videos:chapter_id,id,name', 'user:id,name,email'])
-            ->withCount(['mocktests', 'zoomes', 'chapters', 'lessons', 'orders'])
-            ->findOrFail($course->id);
-
-        $course->courseVideos = $course->lessons()->orderBy('id', 'desc')->doesntHave('chapter')->get();
-
 
         return response()->json($course, 200);
 //        return new CourseResource($course->load('chapters', 'chapters.videos', 'user')->loadCount(['chapters', 'chapterVideos']));

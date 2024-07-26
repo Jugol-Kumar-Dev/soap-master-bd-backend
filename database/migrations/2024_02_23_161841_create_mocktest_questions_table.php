@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('mocktest_questions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mocktest_id')->constrained('mocktests')->onUpdate('cascade');
-            $table->foreignIdFor(\App\Models\Question::class, 'qustion_id')->constrained('qustions')->cascadeOnUpdate();
+            $table->foreignId('question_id')->constrained('questions')->cascadeOnUpdate();
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->nullable()->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });

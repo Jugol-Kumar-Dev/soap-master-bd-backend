@@ -19,6 +19,7 @@ class Course extends Model
 {
     use HasFactory, HasSlug;
 
+    protected $guarded = ['id'];
     protected $fillable = [
         'name',
         'slug',
@@ -58,10 +59,6 @@ class Course extends Model
         return $this->belongsTo('App\Models\User');
     }
 
-    public function subscriptions()
-    {
-        return $this->hasMany('App\Models\Subscription');
-    }
 
     public function transactions()
     {
@@ -73,46 +70,25 @@ class Course extends Model
         return $this->hasMany('App\Models\Order');
     }
 
-    public function zoomes(){
-        return $this->hasMany(Zoom::class, 'course_id');
-    }
-
-    public function lessons(){
-        return $this->hasMany('App\Models\Lesson');
-    }
-
     protected function cover(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? Storage::url($value) : '/images/avatar.png',
+            get: fn ($value) => $value ? config('app.url').Storage::url($value) : '/images/avatar.png',
         );
     }
 
-    protected function files(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $value ? Storage::url($value) : null,
-        );
-    }
-
-    public function mocktestLinks(){
-        return $this->hasMany(MoktestLink::class);
-    }
-
-    public function apiMocktests(){
-        return $this->belongsToMany(MoktestLink::class, 'course_mocktest');
-    }
 
     public function mocktests(){
         return $this->belongsToMany(Mocktest::class,'course_mocktest')->withPivot('status')->withTimestamps();
     }
-    public function chapters(){
+    public function lessons(){
+        return $this->hasMany(Lesson::class);
+    }
+
+    public function chapters()
+    {
         return $this->hasMany(Chapter::class);
     }
 
-    public function chapterVideos()
-    {
-        return $this->hasManyThrough( Lesson::class, Chapter::class);
-    }
 
 }

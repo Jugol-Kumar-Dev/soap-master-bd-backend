@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chapter;
+use App\Models\ChapterItem;
 use App\Models\MoktestLink;
 use DateTime;
 use DateTimeZone;
@@ -33,23 +34,17 @@ class CourseController extends Controller
                 ->when(Request::input('search'), function ($query, $search) {
                     $query->where('name', 'like', "%{$search}%");
                 })
+                ->select("id", "name", 'cover', 'price')
                 ->paginate(Request::input('perPage') ?? 10)
                 ->withQueryString()
                 ->through(fn($course) => [
                     'id' => $course->id,
                     'name' => $course->name,
-                    'description' => $course->description,
                     'cover' => $course->cover,
-                    'video' => $course->video,
-                    'status' => $course->status,
                     'price' => $course->price,
-                    'active_on' => $course->active_on->format('d M Y'),
-                    'category' => $course->category->name,
-                    'instructor' => $course->user->name,
                     'show_url' => URL::route('courses.show', $course->id),
-                    'edit_url' => URL::route('courses.edit', $course->id),
+                    'edit_url' => URL::route('courses.edit', $course->id)
                 ]),
-
             'filters' => Request::only(['search','perPage']),
             'url' => URL::route('courses.index')
         ]);
@@ -76,55 +71,35 @@ class CourseController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store()
     {
         Request::validate([
             'cover' => "required",
-            'category_id' => "required",
             'name' => "required",
-            'description' => "required|max:300",
+            'description' => "required",
             'price' => "required",
-            'active_on' => "required",
         ]);
 
         $image_path = '';
-        $files_path = '';
-
         if (Request::hasFile('cover')) {
             $image_path = Request::file('cover')->store('image', 'public');
         }
-        if (Request::hasFile('files')) {
-            $files_path = Request::file('files')->store('image', 'public');
-        }
 
         $course = new Course();
-
+        $course->title = Request::input('title');
         $course->name = Request::input('name');
         $course->description = Request::input('description');
-        $course->content = Request::input('content');
+        $course->achievement = Request::input('achievement');
+        $course->finishing_achievement = Request::input('finishing_achievement');
         $course->video = Request::input('video');
         $course->cover = $image_path;
-        $course->files = $files_path;
+        $course->old_price = Request::input('old_price');
         $course->price = Request::input('price');
-        $course->user_id = Auth::user()->id;
-        $course->category_id = Request::input('category_id');
-        $course->active_on = date("Y-m-d", strtotime(Request::input('active_on')));
-        $course->access_time = Request::input('access_time');
-        $course->access_type = Request::input('access_type') != "" ? Request::input('access_type') : NULL;
+        $course->user_id = Auth::id();
+        $course->time = Request::input('course_time');
         $course->save();
-
-//        $vimeo_url = '';
-//        if (Request::hasFile('video')) {
-//            $vimeo_url = Vimeo::upload(Request::file('video'), [
-//                'name' => Request::input('name'),
-//                'description' => Request::input('description')
-//            ]);
-//
-//            $course->video = $vimeo_url;
-//            $course->save();
-//        }
 
         return Redirect::route('courses.index');
     }
@@ -134,29 +109,24 @@ class CourseController extends Controller
     {
         $mainMock = array();
         $cMock = array();
-        $course = Course::with(['mocktests', 'zoomes', 'chapters', 'chapters.videos', 'orders', 'orders.user'])
+        $course = Course::with(['mocktests', 'lessons.chapterItem.chapter', 'orders.user'])
             ->withCount('orders')
             ->findOrFail($course->id);
+
         $allMocktest = Mocktest::where('status', 1)->get();
-        $classMocktest = MoktestLink::where('status', 1)->get();
 
 
-        $zooms = new ZoomController();
-        $zoomsData = $zooms->index($is_api=true);
-
-        $lessonVideos = $course->lessons()->orderBy('id', 'desc')->doesntHave('chapter')->get();
-
-
-
-
-        return inertia('Course/Show', [
+        return inertia('Course/Show',[
             'course'    => $course ?? null,
             'mocktests' => $allMocktest ?? [],
-            'apiMocktests' => $course->mocktests ?? [],
-            'lessons'   => Lesson::with('chapter')->where('course_id', $course->id)->orderBy('id', 'desc')->get() ?? [],
-            'chapers'   => Chapter::all() ?? [],
-            'lessonVideos' => $lessonVideos ?? [],
-            'zooms'     => $zoomsData ?? [],
+
+            'lessons'   => Lesson::with('chapterItem.chapter')->where('course_id', $course->id)
+                    ->orderBy('id', 'desc')->get()
+                ?? [],
+
+            'chapters'   => Chapter::query()->with('chapterItems')->get() ?? [],
+            'chapters_items'   => ChapterItem::query()->with('chapter')->get() ?? [],
+
 
             'url'       => URL::route('courses.index'),
             'lesson_store_url' => URL::route('lessons.index'),
@@ -307,122 +277,7 @@ class CourseController extends Controller
         return back();
     }
 
-    public function courseZoomStore()
-    {
-        $meetingId =\request("zoomid");
 
-
-        if (Auth::user()->role == 'admin' || Auth::user()->role == 'instructor') {
-            if (Auth::user()->jwt_token != '' && Auth::user()->zoom_email != '') {
-                $token = Auth::user()->jwt_token;
-                $email = Auth::user()->zoom_email;
-                $curl = curl_init();
-
-                curl_setopt_array($curl, array(
-                    CURLOPT_URL => "https://api.zoom.us/v2/users/$email",
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_ENCODING => "",
-                    CURLOPT_MAXREDIRS => 10,
-                    CURLOPT_TIMEOUT => 30,
-                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST => "GET",
-                    CURLOPT_HTTPHEADER => array(
-                        "authorization: Bearer $token"
-                    ),
-                ));
-
-                $profile = curl_exec($curl);
-                $profile = json_decode($profile, true);
-
-                $err = curl_error($curl);
-
-                curl_close($curl);
-
-                if (isset($profile['code']) && $profile['code'] != 200) {
-                    // \Session::flash('delete', $profile['message']);
-                    return redirect()->route('setting');
-                }
-
-
-                $curl = curl_init();
-
-                curl_setopt_array($curl, array(
-                    CURLOPT_URL => "https://api.zoom.us/v2/meetings/$meetingId",
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_ENCODING => "",
-                    CURLOPT_MAXREDIRS => 10,
-                    CURLOPT_TIMEOUT => 30,
-                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST => "GET",
-                    CURLOPT_HTTPHEADER => array(
-                        "authorization: Bearer $token"
-                    ),
-                ));
-
-                $response = curl_exec($curl);
-                $err = curl_error($curl);
-                $response = json_decode($response, true);
-
-
-//                dd($response);
-                if (isset($response['settings']['contact_email'])) {
-                    $owner_id = $response['settings']['contact_email'];
-                } else {
-                    $owner_id = $response['host_email'];
-                }
-
-
-
-                $utc = isset($response['start_time']) ? $response['start_time'] : NULL;
-                $dt = new DateTime($utc);
-                $tz = new DateTimeZone($response['timezone']); // or whatever zone you're after
-                $dt->setTimezone($tz);
-                $meeting_time = $dt->format('Y-m-d H:i:s');
-
-                if (isset($response['code']) && $response['code'] != 200) {
-                    // \Session::flash('delete', $response['message']);
-                    return redirect()->route('setting');
-                }else{
-
-                    $created_meeting = Zoom::create(
-                        [
-                            'meeting_id' => $response['id'],
-                            'user_id' => Auth::user()->id,
-                            'owner_id' => $owner_id,
-                            'meeting_title' => $response['topic'],
-                            'start_time' => $meeting_time,
-                            'zoom_url' => $response['start_url'],
-                            'join_url' => $response['join_url'],
-                            'course_id' => \request('courseId'),
-                            'type' => $response['type'],
-                            'agenda' => $response['agenda'],
-                        ]
-                    );
-//                    return $created_meeting;
-                }
-
-                curl_close($curl);
-
-            } else {
-                return redirect()->route('setting')->with('delete', 'Zoom Token or email not found !');
-            }
-        } else {
-            return abort(403, 'Unauthorized action.');
-        }
-
-    }
-
-    public function deleteZoomFormCourse($id){
-        $zoom = Zoom::where('meeting_id', $id)->first();
-        $zoom->delete();
-        return back();
-    }
-
-
-    public function courseLessonUpadate()
-    {
-        # code...
-    }
 
     public function deleteMockFormCourse(){
         $course = Course::findOrFail((int)Request::input('course_id'));

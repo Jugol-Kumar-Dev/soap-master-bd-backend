@@ -12,8 +12,8 @@ class Lesson extends Model
     protected $guarded = ['id'];
 
 
-    public function chapter(){
-        return $this->belongsTo(Chapter::class);
+    public function chapterItem(){
+        return $this->belongsTo(ChapterItem::class);
     }
 
 

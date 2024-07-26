@@ -53,19 +53,18 @@
                     <div class="card-body">
                         <div class="course-card">
                     <div class="course-card__thumbnail">
-                        <img :src="`${course.cover}`" @error="errorImage" class="w-100 object-fit-cover" style="max-height: 200px;">
+                        <img :src="`${course.cover}`" @error="errorImage" class="w-100 object-fit-contain" style="max-height: 200px;">
                     </div>
                     <div class="course-card__body">
-                        <RouterLink :to="`/courses/${course?.id}`" class="course-card__body-title">
+                        <Link :href="`/courses/${course?.id}`" class="course-card__body-title">
                             <h5 class="text-primary mt-2">
                                 {{ course?.name?.slice(0, 45) }}...
                             </h5>
-                        </RouterLink>
-<!--                        <small>{{ course?.description?.slice(0, 55) }}...</small>-->
+                        </Link>
                     </div>
                     <div class="course-card__footer d-flex align-items-center justify-content-between">
                         <div class="review">
-                            <strong>{{ course?.price }} AUD</strong>
+                            <strong>{{ course?.price }} টাকা</strong>
                         </div>
                         <div class="btn-group dropup dropdown-icon-wrapper">
                             <button type="button"
@@ -89,85 +88,14 @@
                                 </span>
                             </div>
                         </div>
-<!--                        <div class="d-flex align-items-center gap-1 mt-1">
-                            <Link :href="course.show_url" class="text-success">
-                                <Icon title="eye"/>
-                                <span> Show</span>
-                            </Link>
-                            <span>|</span>
-                            <Link :href="course.edit_url" type="button" class="text-primary">
-                                <Icon title="pencil"/>
-                                <span> Edit</span>
-                            </Link>
-                            <span>|</span>
-                            <button @click="deleteItemModal(course.id)" type="button"
-                                    class="bg-white text-danger border-0">
-                                <Icon title="trash"/>
-                                <span> Delete</span>
-                            </button>
-                        </div>-->
                     </div>
                 </div>
                     </div>
                 </div>
             </div>
-
-<!--
-                    <div v-for="course in courses.data" :key="course.id" class="col-sm-12 col-md-6 col-lg-4">
-                        <div class="card border-success mx-2">
-                            <div class="bg-light-primary rounded-top text-center">
-                                <img :src="course.cover"
-                                     :alt="course.name" height="170"
-                                     class="">
-                            </div>
-                            <div class="card-body px-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="my-auto">
-                                        <h4 class="card-title mb-25">{{ course.name }}</h4>
-                                    </div>
-                                </div>
-                                <div class="mt-0">
-                                    <ul class="list-group">
-                                        <li class="list-group-item d-flex align-items-center">
-                                            <span>Price:  {{ course.price }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex align-items-center">
-                                            <span>Category: {{ course.category }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex align-items-center">
-                                            <span>Active From: {{ course.active_on }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex align-items-center">
-                                            <span>Status: {{ course.status }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card-text pt-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <Link :href="course.show_url" class="btn btn-outline-success waves-effect">
-                                            <Icon title="eye"/>
-                                            <span> Show</span>
-                                        </Link>
-                                        <Link :href="course.edit_url" type="button" class="btn btn-outline-primary waves-effect">
-                                            <Icon title="pencil"/>
-                                            <span> Edit</span>
-                                        </Link>
-                                        <button @click="deleteItemModal(course.id)" type="button"
-                                                class="btn btn-outline-danger waves-effect">
-                                            <Icon title="trash"/>
-                                            <span> Delete</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>-->
         </div>
 
-
         <Pagination :links="courses.links" :from="courses.from" :to="courses.to" :total="courses.total"/>
-
-        <!-- list and filter end -->
     </section>
 
     </Layout>
@@ -225,5 +153,7 @@
     watch([search, perPage], debounce(function ([val, val2]) {
         router.get(props.url, {search: val, perPage: val2}, {preserveState: true, replace: true});
     }, 300));
+
+
 
 </script>

@@ -38,7 +38,6 @@ createInertiaApp({
             .use(vbPlugin)
             .use(store)
             .use(CKEditor)
-            .use(appUrl)
             .use(createPinia())
             .component("Link", Link)
             .component("Head", Head)

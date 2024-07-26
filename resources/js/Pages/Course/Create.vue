@@ -6,7 +6,7 @@
         <div class="content-header-left col-md-9 col-12 mb-2">
             <div class="row breadcrumbs-top">
                 <div class="col-12">
-                    <h2 class="content-header-title float-start mb-0">Course Create Form</h2>
+                    <h2 class="float-start mb-0">নতুন কোর্স তৈরি করুন</h2>
                 </div>
             </div>
         </div>
@@ -17,61 +17,45 @@
                 <form class="form form-vertical" @submit.prevent="createNewCourse">
                     <div class="row">
                         <div class="col-12">
-                            <div class="mb-1">
-                                <label class="form-label">Select a Category</label>
-                                <v-select v-model="createForm.category_id" label="name" :options="categories" :reduce="category => category.id"></v-select>
-                                <span class="error text-danger" v-if="props.errors.category_id">{{ props.errors.category_id }}</span>
-                            </div>
+                            <Text v-model="createForm.title" :error="props.errors.name" label="কোর্স টাইটেল" placeholder="কোর্স টাইটেল" />
                         </div>
                         <div class="col-12">
-                            <Text v-model="createForm.name" :error="props.errors.name" label="Course Title" placeholder="Course title" />
+                            <Text v-model="createForm.name" :error="props.errors.name" label="কোর্সের নাম" placeholder="কোর্সের নাম" />
                         </div>
-                        <div class="col-4">
-                            <Image v-model="createForm.cover" :error="props.errors.cover" label="Cover Pic"/>
+                        <div class="col-6">
+                            <Image v-model="createForm.cover" :error="props.errors.cover" label="কভার ফোটো"/>
                         </div>
-                        <div class="col-4">
-                            <Text v-model="createForm.video" :error="props.errors.video" label="Course Intro Video-(Only URL)" placeholder="Course Intro Video Url" />
+                        <div class="col-6">
+                            <Text v-model="createForm.video" :error="props.errors.video" label="ইন্ট্রো ভিডিও (শুধু লিংক)" placeholder="ইন্ট্রো ভিডিও" />
                         </div>
-                        <div class="col-4">
-                            <Image v-model="createForm.files" label="Others Files"/>
+                        <div class="col-6">
+                            <Textarea v-model="createForm.description" :error="props.errors.description" label="উদ্দেশ্যসমূহ" />
+                        </div>
+                        <div class="col-6">
+                            <Textarea v-model="createForm.achievement" :error="props.errors.achievement" label="লক্ষ্যসমূহ" />
                         </div>
                         <div class="col-12">
-                            <Textarea v-model="createForm.description" :error="props.errors.description" label="Course Short Description- max(300)" />
-                        </div>
-                        <div class="col-12">
-                            <div class="mb-1">
-                                <label class="form-label">Course content</label>
-                                <TextEditor v-model="createForm.content" />
-                            </div>
+                            <Textarea v-model="createForm.finishing_achievement" :error="props.errors.finishing_achievement" label="কোর্স শেষে" />
                         </div>
                         <div class="col-4">
-                            <Text v-model="createForm.price" type="number" label="Course Price" placeholder="100.00" prefix="BDT" />
+                            <Text v-model="createForm.old_price" type="number" label="পূর্বের মূল্য (যদি থাকে)" placeholder="১০০.০০" prefix="টাকা" />
                         </div>
-                        <div class="col-4">
-                            <label>Active From: </label>
-                            <datepicker v-model="createForm.active_on" class="form-control" placeholder="Choose a date" />
-                            <span class="error text-danger" v-if="props.errors.active_on">{{ props.errors.active_on }}</span>
-                        </div>
-                        <div class="col-4">
-                            <label>Access Time:</label>
-                            <fieldset>
-                                <div class="input-group">
-                                    <input type="text" v-model="createForm.access_time" class="form-control" placeholder="Access Limitation Time" aria-label="Amount">
-                                    <select class="form-control"  v-model="createForm.access_type" placeholder="Chose Access Type">
-                                        <option selected value="">~~ Chose Option ~~</option>
-                                        <option value="Year">Year</option>
-                                        <option value="Month">Month</option>
-                                        <option value="Days">Days</option>
-                                    </select>
 
-                                </div>
-                            </fieldset>
+                        <div class="col-4">
+                            <Text v-model="createForm.price" type="number" label="বর্তমান মূল্য" placeholder="১০০.০০" prefix="টাকা" />
+                        </div>
+                        <div class="col-4">
+                            <Text v-model="createForm.course_time" type="text" label="সময়সীমা" placeholder="কোর্সের সময়সীমা"/>
                         </div>
 
                         <div class="col-12">
                             <button type="submit"
-                                class="btn btn-primary me-1 waves-effect waves-float waves-light">Submit</button>
-                            <button type="reset" class="btn btn-outline-secondary waves-effect">Reset</button>
+                                class="btn btn-primary me-1 waves-effect waves-float waves-light">
+                                সেভ করুন
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary waves-effect">
+                                কেটে দিন
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -95,22 +79,20 @@ import {useForm} from "@inertiajs/vue3";
 let props = defineProps({
     categories: Object,
     url: String,
-    //   can: Object,
     errors:Object,
 })
 
 let createForm = useForm({
+    title: null,
     name: null,
-    category_id: null,
     cover: null,
     video: null,
     description: null,
-    content: null,
+    achievement: null,
+    finishing_achievement: null,
+    old_price: null,
     price: null,
-    active_on: null,
-    files:null,
-    access_time:null,
-    access_type:null,
+    course_time: null
 })
 
 let createNewCourse = () => {

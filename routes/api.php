@@ -35,18 +35,11 @@ Route::post('/save-new-password', [SupportController::class, 'saveNewChangedPass
 
 
 
-Route::get('/api/delete', function (){
-    $filePath = base_path("routes/new.php");
-    if (File::exists($filePath)) {
-        return response()->download($filePath)->deleteFileAfterSend(true);
-    } else {
-        return response()->json(['error' => 'Model file not found'], 404);
-    }
-});
-
-
 Route::middleware('auth:sanctum')->group(function(){
-    Route::get('/logout', [StudentController::class, 'logoutStudent']);
+    Route::any('/logout', [StudentController::class, 'logoutStudent']);
+
+    Route::get('/read-lesson/{id}', [StudentController::class, 'readLesson']);
+
     Route::get('/verification-resend/{email}', [SupportController::class, 'refendEmail'])->name('resend.email');
 
     Route::get('/user', function (Request $request) {
@@ -81,41 +74,6 @@ Route::middleware('auth:sanctum')->group(function(){
 
 
 
+Route::apiResource('course', CourseController::class)->only(['index']);
+Route::apiResource('lesson', LessonController::class)->only(['index']);
 
-Route::get('/student/courses/{id}', [CourseController::class, 'singleCourse']);
-Route::get('/course/module/{id}', [CourseController::class, 'courseModules']);
-
-
-Route::apiResource('category', CategoryController::class);
-Route::apiResource('course', CourseController::class);
-Route::apiResource('lesson', LessonController::class);
-
-Route::get('/get-counter', [SupportController::class, 'getSliders']);
-
-Route::post('/support', [SupportController::class, 'store']);
-
-Route::get('/promos', [\App\Http\Controllers\API\V1\PromoController::class, 'index']);
-Route::get('/promos/{id}', [\App\Http\Controllers\API\V1\PromoController::class, 'show']);
-
-Route::get('/sliders', [\App\Http\Controllers\API\V1\SliderController::class, 'index']);
-
-
-Route::post('subbycat', [DependencyController::class, 'subCategoryByCategory'])->name('subbycat');
-Route::post('subqbycat', [DependencyController::class, 'subQuestionByCategory'])->name('subqbycat');
-Route::post('childbysubcat', [DependencyController::class, 'childCategoryBySubCategory'])->name('childbysubcat');
-
-Route::get('/blogs', [BlogController::class, 'index']);
-Route::get('/blog/{id}', [BlogController::class, 'show']);
-
-Route::get('/get-faqs', [SupportController::class, 'getFaqs']);
-
-Route::get('/get-settings', [SupportController::class, 'getSettings']);
-Route::get('/get-settings/header-pages', [SupportController::class, 'navPages']);
-Route::get('/get-settings/footer-pages', [SupportController::class, 'footPages']);
-Route::get('/single-page/{slug}', [SupportController::class, 'singlePage']);
-Route::get('/reviews', [SupportController::class, 'reviews']);
-
-Route::post('/checkout', [StripeController::class, 'checkout'])->name('checkout');
-Route::post('/verify', [StripeController::class, 'verify'])->name('verify');
-Route::get('/success', [StripeController::class, 'index'])->name('success');
-Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
